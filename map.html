@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earthquake Visualization</title>
+  
+  <!-- Inline CSS for dark theme -->
+  <style>
+    body {
+      background-color: black;
+      color: rgb(239, 131, 7);
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    /* Controls styling */
+    #controls {
+      padding: 10px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+    }
+    /* Charts container styling */
+    #charts-wrapper {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: space-around;
+      padding: 20px;
+    }
+    .chart-container {
+      flex: 1;
+      min-width: 300px;
+      margin: 10px;
+      background-color: #333;
+      padding: 10px;
+      border: 1px solid #555;
+    }
+    /* Map container styling */
+    #map {
+      width: 100%;
+      height: 400px;
+      position: relative; /* Ensure absolute positioned children are relative to this */
+    }
+    /* Optional: style for the charts-link if you want to keep it */
+    #charts-link {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #333;
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      z-index: 1000;
+    }
+  </style>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  
+  <!-- Custom CSS (if any) -->
+  <link rel="stylesheet" href="{{ '/assets/css/styles.css' | relative_url }}">
+  
+  <!-- Chart.js and Date Adapter for time scales -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+</head>
+<body>
+  
+  <!-- Controls: Drop down for Time Period -->
+  <div id="controls">
+    <h2 style="color: orange;">Earthquake Visualization Over Time</h2>
+    <label style="color: orange;" for="time-period">Select Time Period: </label>
+    <select id="time-period">
+      <option value="all_hour">Past Hour</option>
+      <option value="all_day">Past Day</option>
+      <option value="all_week">Past Week</option>
+      <option value="all_month">Past Month</option>
+    </select>
+  </div>
+  
+  <!-- Charts Container: Three charts in one row -->
+  <div id="charts-wrapper">
+    <div class="chart-container">
+      <canvas id="chart1" width="400" height="300"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart2" width="400" height="300"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart3" width="400" height="300"></canvas>
+    </div>
+  </div>
+  
+  <!-- Map Container -->
+  <div id="map">
+    <!-- You could keep the charts-link here if desired; otherwise, it's optional -->
+    <div id="charts-link" style="position: absolute; top: 10px; right: 10px; background-color: #333; padding: 5px 10px; border: 1px solid #ccc; z-index: 1000;">
+    </div>
+  </div>
+  
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  
+  <!-- Custom JS: Map and Charts -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Global chart variables
+      var chart1, chart2, chart3;
+      
+      // Initialize the map
+      var map = L.map('map').setView([37.0902, -95.7129], 4); // Centered on the USA
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      }).addTo(map);
+      
+      // Create a marker layer group for map markers
+      var markers = L.layerGroup().addTo(map);
+      
+      // Function to initialize all three charts with empty data
+      function initCharts() {
+        // Chart 1: Line Chart (Magnitude Over Time)
+        const ctx1 = document.getElementById('chart1').getContext('2d');
+        chart1 = new Chart(ctx1, {
+          type: 'line',
+          data: {
+            labels: [],
+            datasets: [{
+              label: 'Magnitude Over Time',
+              data: [],
+              borderColor: 'orange',
+              backgroundColor: 'grey',
+              fill: false,
+              tension: 0.1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { labels: { color: 'white' } }
+            },
+            scales: {
+              x: {
+                type: 'time',
+                time: {
+                  tooltipFormat: 'MMM dd, yyyy, h:mm a',
+                  displayFormats: { hour: 'MMM dd, ha' }
+                },
+                title: { display: true, text: 'Time', color: 'white' },
+                ticks: { color: 'white' }
+              },
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Magnitude', color: 'white' },
+                ticks: { color: 'white' }
+              }
+            }
+          }
+        });
+        
+        // Chart 2: Bar Chart (Frequency Distribution)
+        const ctx2 = document.getElementById('chart2').getContext('2d');
+        chart2 = new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: [],  // Magnitude bins
+            datasets: [{
+              label: 'Frequency Distribution',
+              data: [],
+              backgroundColor: 'grey',
+              borderColor: 'orange',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { labels: { color: 'white' } }
+            },
+            scales: {
+              x: {
+                title: { display: true, text: 'Magnitude Range', color: 'white' },
+                ticks: { color: 'white' }
+              },
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Count', color: 'white' },
+                ticks: { color: 'white' }
+              }
+            }
+          }
+        });
+        
+        // Chart 3: Scatter Plot (Depth vs Magnitude)
+        const ctx3 = document.getElementById('chart3').getContext('2d');
+        chart3 = new Chart(ctx3, {
+          type: 'scatter',
+          data: {
+            datasets: [{
+              label: 'Depth vs Magnitude',
+              data: [],
+              backgroundColor: 'grey',
+              borderColor: 'orange'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { labels: { color: 'white' } }
+            },
+            scales: {
+              x: {
+                title: { display: true, text: 'Depth (km)', color: 'white' },
+                ticks: { color: 'white' }
+              },
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Magnitude', color: 'white' },
+                ticks: { color: 'white' }
+              }
+            }
+          }
+        });
+      }
+      
+      // Function to fetch earthquake data and update both the map and the charts
+      function fetchAndUpdateAll(period) {
+        // Clear existing markers
+        markers.clearLayers();
+        // Construct the API URL
+        var url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/' + period + '.geojson';
+        console.log("Fetching data from:", url);
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            console.log("Fetched data:", data);
+            if (data.features && data.features.length > 0) {
+              // Update Map Markers
+              data.features.forEach(function(feature) {
+                const coords = feature.geometry.coordinates;
+                const lat = coords[1];
+                const lon = coords[0];
+                const depth = coords[2];
+                const magnitude = feature.properties.mag;
+                const place = feature.properties.place;
+                const time = new Date(feature.properties.time).toLocaleString();
+                var marker = L.circleMarker([lat, lon], {
+                  radius: magnitude * 3,
+                  fillColor: "#ff7800",
+                  color: "#000",
+                  weight: 1,
+                  opacity: 1,
+                  fillOpacity: 0.8
+                }).bindPopup(`<strong>Magnitude:</strong> ${magnitude}<br>
+                              <strong>Depth:</strong> ${depth} km<br>
+                              <strong>Location:</strong> ${place}<br>
+                              <strong>Time:</strong> ${time}`);
+                markers.addLayer(marker);
+              });
+              
+              // Update Chart 1: Magnitude Over Time (Line Chart)
+              const times = data.features.map(feature => new Date(feature.properties.time));
+              const magnitudes = data.features.map(feature => feature.properties.mag);
+              chart1.data.labels = times;
+              chart1.data.datasets[0].data = magnitudes;
+              chart1.update();
+              
+              // Update Chart 2: Frequency Distribution (Bar Chart)
+              const bins = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+              const binLabels = bins.slice(0, -1).map((b, i) => `${b}-${bins[i+1]}`);
+              const frequency = new Array(binLabels.length).fill(0);
+              data.features.forEach(function(feature) {
+                const mag = feature.properties.mag;
+                for (let i = 0; i < bins.length - 1; i++) {
+                  if (mag >= bins[i] && mag < bins[i+1]) {
+                    frequency[i]++;
+                    break;
+                  }
+                }
+              });
+              chart2.data.labels = binLabels;
+              chart2.data.datasets[0].data = frequency;
+              chart2.update();
+              
+              // Update Chart 3: Depth vs Magnitude (Scatter Plot)
+              const scatterData = data.features.map(function(feature) {
+                return {
+                  x: feature.geometry.coordinates[2],
+                  y: feature.properties.mag
+                };
+              });
+              chart3.data.datasets[0].data = scatterData;
+              chart3.update();
+            } else {
+              console.log("No earthquake data found for period:", period);
+              // Clear map and charts if no data available
+              chart1.data.labels = [];
+              chart1.data.datasets[0].data = [];
+              chart1.update();
+              chart2.data.labels = [];
+              chart2.data.datasets[0].data = [];
+              chart2.update();
+              chart3.data.datasets[0].data = [];
+              chart3.update();
+            }
+          })
+          .catch(error => console.error('Error fetching earthquake data:', error));
+      }
+      
+      // Initialize charts on page load
+      initCharts();
+      
+      // Event listener for the drop down to fetch and update both map and charts
+      document.getElementById('time-period').addEventListener('change', function() {
+        const period = this.value;
+        fetchAndUpdateAll(period);
+      });
+      
+      // Initial data load for the default period ("all_hour")
+      fetchAndUpdateAll('all_hour');
+    });
+  </script>
+</body>
+</html>

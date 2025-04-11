@@ -1,0 +1,21 @@
+# Jekyll build output
+_site/
+
+# Cache and temporary files
+.sass-cache/
+*.swp
+.DS_Store
+
+# Node modules (if you use npm for asset bundling or additional tooling)
+node_modules/
+
+# Build output directories (if using tools like webpack, gulp, etc.)
+dist/
+build/
+
+# Environment files (if using any, e.g., for API keys)
+.env
+
+# Editor-specific files
+.vscode/
+.idea/
