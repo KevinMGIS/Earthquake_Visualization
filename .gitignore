@@ -6,6 +6,8 @@ _site/
 *.swp
 .DS_Store
 
+charts.html
+
 # Node modules (if you use npm for asset bundling or additional tooling)
 node_modules/
 
