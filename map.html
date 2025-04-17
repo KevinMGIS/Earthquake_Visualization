@@ -66,6 +66,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 </head>
 <body>
+  <div style="text-align:center; padding: 10px;">
+    <a href="#project-writeup" style="color: orange; font-weight: bold;">View Full Project Write-Up</a>
+  </div>
   
   <!-- Controls: Drop down for Time Period -->
   <div id="controls">
@@ -320,5 +323,63 @@
       fetchAndUpdateAll('all_hour');
     });
   </script>
+  <div id="project-writeup" style="background-color: #222; color: white; padding: 40px;">
+    <h2 style="color: orange;">Project Write-Up: Earthquake Visualization</h2>
+    <p>This project combines real-time data visualization and web mapping to explore global seismic activity using data provided by the <strong>USGS Earthquake Hazards Program API</strong>. The final product is a browser-based interactive dashboard that displays recent earthquakes alongside dynamic charts, allowing users to visualize magnitude, frequency, and depth trends based on a selected time frame.</p>
+
+    <h3 style="color: orange;">Tools & Technologies Used</h3>
+    <ul>
+      <li><strong>Leaflet.js</strong> – For rendering the interactive map and displaying earthquake locations using circle markers.</li>
+      <li><strong>Chart.js</strong> – For generating three charts: a line chart of magnitude over time, a bar chart of magnitude frequency, and a scatter plot showing depth vs. magnitude.</li>
+      <li><strong>GitHub Pages</strong> – For static site hosting and version control.</li>
+      <li><strong>USGS Earthquake API</strong> – For retrieving real-time GeoJSON data on earthquake events globally.</li>
+      <li><strong>Jekyll (Minima Theme)</strong> – For site generation and layout styling.</li>
+    </ul>
+
+    <h3 style="color: orange;">Process & Implementation Steps</h3>
+    <ol>
+      <li>Set up the GitHub Pages repository using a Jekyll-based theme with a dark visual design and orange accents.</li>
+      <li>Created a responsive layout with an HTML structure for map display and data charts, styled with embedded CSS.</li>
+      <li>Integrated Leaflet.js to initialize a zoomable world map and populated it with real-time earthquake markers based on magnitude and depth.</li>
+      <li>Added Chart.js visualizations above the map to track temporal and spatial trends in earthquake characteristics.</li>
+      <li>Implemented a shared drop-down menu that triggers both map updates and chart updates depending on the selected time window (past hour, day, week, or month).</li>
+      <li>Used `fetch()` to call the USGS GeoJSON feed, parsed the results, and dynamically updated the charts and map markers using JavaScript.</li>
+    </ol>
+
+    <h3 style="color: orange;">Code Snippet Examples</h3>
+    <p><strong>Fetching Earthquake Data:</strong></p>
+    <pre style="background-color: #111; padding: 10px; overflow-x: auto;"><code>fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson')
+  .then(response =&gt; response.json())
+  .then(data =&gt; {
+    // parse and visualize data
+  });</code></pre>
+
+    <p><strong>Adding a Leaflet Marker for Each Earthquake:</strong></p>
+    <pre style="background-color: #111; padding: 10px; overflow-x: auto;"><code>var marker = L.circleMarker([lat, lon], {
+  radius: magnitude * 3,
+  fillColor: "#ff7800",
+  color: "#000",
+  weight: 1,
+  fillOpacity: 0.8
+}).bindPopup(`Magnitude: ${magnitude}&lt;br&gt;Location: ${place}`);</code></pre>
+
+    <p><strong>Creating a Chart.js Line Chart:</strong></p>
+    <pre style="background-color: #111; padding: 10px; overflow-x: auto;"><code>new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: times,
+    datasets: [{
+      label: 'Magnitude Over Time',
+      data: magnitudes,
+      borderColor: 'orange',
+      backgroundColor: 'grey',
+      fill: false
+    }]
+  }
+});</code></pre>
+
+    <h3 style="color: orange;">Outcome</h3>
+    <p>The final product delivers a user-friendly interface for exploring earthquake activity across different time windows. It offers real-time insights, improves data accessibility, and visually communicates seismic trends with clarity. The combined use of web mapping and interactive charts makes this project both informative and engaging.</p>
+  </div>
 </body>
 </html>
